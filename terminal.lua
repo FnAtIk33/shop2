@@ -457,28 +457,34 @@ end
 
 local function getItemCount(fingerprint, needed)
     local allCount, availableItems = 0, {}
+    if itemsInMe ~= nil then
 
-    for item = 1, #itemsInMe do 
-        if itemsInMe[item].fingerprint.id == fingerprint.id and (not fingerprint.dmg or itemsInMe[item].fingerprint.dmg == fingerprint.dmg) and (not fingerprint.nbt_hash or itemsInMe[item].fingerprint.nbt_hash == fingerprint.nbt_hash) then
-            if needed and (itemsInMe[item].size >= needed) then
-                table.insert(availableItems, {fingerprint = itemsInMe[item].fingerprint, count = needed})
-                allCount = needed
-                return allCount, availableItems
-            end
+        for item = 1, #itemsInMe do
+            if itemsInMe[item].fingerprint.id == fingerprint.id and
+                (not fingerprint.dmg or itemsInMe[item].fingerprint.dmg == fingerprint.dmg) and
+                (not fingerprint.nbt_hash or itemsInMe[item].fingerprint.nbt_hash == fingerprint.nbt_hash) then
+                if needed and (itemsInMe[item].size >= needed) then
+                    table.insert(availableItems, { fingerprint = itemsInMe[item].fingerprint, count = needed })
+                    allCount = needed
+                    return allCount, availableItems
+                end
 
-            if needed and (itemsInMe[item].size + allCount > needed) then
-                table.insert(availableItems, {fingerprint = itemsInMe[item].fingerprint, count = itemsInMe[item].size - allCount})
-                allCount = allCount + (itemsInMe[item].size - allCount)
-                break
-            else
-                table.insert(availableItems, {fingerprint = itemsInMe[item].fingerprint, count = itemsInMe[item].size})
-                allCount = allCount + itemsInMe[item].size
+                if needed and (itemsInMe[item].size + allCount > needed) then
+                    table.insert(availableItems,
+                        { fingerprint = itemsInMe[item].fingerprint, count = itemsInMe[item].size - allCount })
+                    allCount = allCount + (itemsInMe[item].size - allCount)
+                    break
+                else
+                    table.insert(availableItems,
+                        { fingerprint = itemsInMe[item].fingerprint, count = itemsInMe[item].size })
+                    allCount = allCount + itemsInMe[item].size
+                end
             end
         end
     end
-
     return allCount, availableItems
 end
+
 
 local function getAllItemCount(fingerprints, needed)
     local allCount, availableItems = 0, {}
@@ -822,18 +828,20 @@ local function inputWrite(write, char)
         end
     elseif checkWrite and writes[write].len + 1 ~= writes[write].border and not writes[write].onlyClear then
         local symbol = unicode.char(char)
-        if writes[write].pos ~= writes[write].len then
-            local beforeInput, afterInput = unicode.sub(1, writes[write].pos), unicode.sub(writes[write].pos, writes[write].len)
-            writes[write].input = beforeInput .. symbol .. afterInput
-        else
-            writes[write].input = writes[write].input .. symbol
-        end
-        writes[write].len = writes[write].len + 1
-        writes[write].pos = writes[write].pos + 1
+        if symbol:match('^[A-Za-z0-9А-Я-а-я ]') ~= nil then
+            if writes[write].pos ~= writes[write].len then
+                local beforeInput, afterInput = unicode.sub(1, writes[write].pos), unicode.sub(writes[write].pos, writes[write].len)
+                writes[write].input = beforeInput .. symbol .. afterInput
+            else
+                writes[write].input = writes[write].input .. symbol
+            end
+            writes[write].len = writes[write].len + 1
+            writes[write].pos = writes[write].pos + 1
 
-        drawText(write, true)
-        inputFunction(write, char)
-        cursor(write, true, true)
+            drawText(write, true)
+            inputFunction(write, char)
+            cursor(write, true, true)
+        end
     elseif char == 8 and writes[write].len - 1 ~= -1 then
         if writes[write].pos ~= writes[write].len then
             local beforeInput, afterInput = unicode.sub(1, writes[write].pos - 1), unicode.sub(writes[write].pos, writes[write].len)
