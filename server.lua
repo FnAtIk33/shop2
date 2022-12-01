@@ -7,7 +7,7 @@ local modem = component.modem
 local port = 1414
 
 local terminals = {
-	"b0dca8b9-0864-44e7-bd55-3cf8bdf0a880"
+	"b8dca8b9-0864-44e7-bd55-3cf8bdf0a880"
 }
 
 for terminal = 1, #terminals do 
